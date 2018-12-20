@@ -32,7 +32,7 @@ def save
   VALUES(?,?)
 SQL
   DB[:conn].execute(sql, self.name, self.breed)
-  new_instance = DB[:conn].execute("SELECT id, name, breed FROM dogs")
+  new_instance = DB[:conn].execute("SELECT id, name, breed FROM dogs WHERE name = ? AND breed = ?", name, breed)
   first_row = new_instance[0]
   @id = first_row[0]
   self
@@ -55,23 +55,24 @@ SQL
 end
 
 def self.find_or_create_by( name:, breed:)
-  dog = DB[:conn].execute('SELECT name, breed FROM dogs WHERE name = ? AND breed =?', name, breed)
+  dog = DB[:conn].execute('SELECT id, name, breed FROM dogs WHERE name = ? AND breed =?', name, breed)
   if !dog.empty?
     dog_info = dog[0]
-    dog = self.new(dog_info[0], dog_info[1], dog_info[2])
+    dog = self.new({:id => dog_info[0], :name => dog_info[1], :breed =>dog_info[2]})
   else
     dog = self.create(name: name, breed:breed)
   end
   dog 
 end
 
-def self.new_from_db(row)
-   new_dog = self.new
-   new_dog.id =  row[0]
-   new_dog.name = row[1]
-   new_dog.breed = row[3]
-   new_dog
-end
+  def self.new_from_db(row)
+    new_dog = self.new
+    new_dog.id =  row[0]
+    new_dog.name = row[1]
+    new_dog.breed = row[3]
+    new_dog
+  end
+  
   def self.find_by_name(name)
     sql =<<SQL
     SELECT * 
@@ -80,5 +81,16 @@ end
 SQL
     result = DB[:conn].execute(sql, name)[0]
     self.new(result[0], result[1], result[2])
+    self.name
+  end
+
+  def update
+    sql=<<SQL
+    UPDATE dogs
+    SET name = ?,
+    breed = ?
+    WHERE id = ?
+SQL
+    DB[:conn].execute(sql, self.name, self.breed, self.id)
   end
 end
