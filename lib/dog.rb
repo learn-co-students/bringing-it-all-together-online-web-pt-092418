@@ -66,10 +66,7 @@ def self.find_or_create_by( name:, breed:)
 end
 
   def self.new_from_db(row)
-    new_dog = self.new
-    new_dog.id =  row[0]
-    new_dog.name = row[1]
-    new_dog.breed = row[3]
+    new_dog = self.new({:id => row[0], :name =>row[1], :breed =>row[2]})
     new_dog
   end
   
@@ -80,8 +77,8 @@ end
     WHERE name = ?
 SQL
     result = DB[:conn].execute(sql, name)[0]
-    self.new(result[0], result[1], result[2])
-    self.name
+    dog = self.new(:id => result[0], :name =>result[1], :breed =>result[2])
+    dog
   end
 
   def update
