@@ -35,6 +35,7 @@ SQL
   new_instance = DB[:conn].execute("SELECT id, name, breed FROM dogs")
   first_row = new_instance[0]
   @id = first_row[0]
+  self
 end
     
 def self.create(hash)
